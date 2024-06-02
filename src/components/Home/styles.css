@@ -1,6 +1,6 @@
 .heading-container {
   background: #191c29;
-  width: var(--card-width);
+  width: fit-content;
   height: var(--card-height);
   position: relative;
   border-radius: 6px;
@@ -11,7 +11,8 @@
   font-size: 1.5em;
   color: white;
   cursor: pointer;
- 
+  margin: auto;
+  margin-bottom: 20px;
   margin-top: 20px;
   transition: color 1s;
   box-sizing: border-box;
@@ -67,5 +68,25 @@
 }
 
 .create-lobby-container{
-  margin: 20px
+  margin: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.lobby-input-container{
+  display: flex;
+  gap: 20px;
+}
+
+input{
+  align-self: center;
+  height: 20px !important;
+  border-radius: 8px;
+  padding: 8px;
+  max-height: 10px;
+}
+
+button{
+  min-height: 32px;
+  align-self: center;
 }

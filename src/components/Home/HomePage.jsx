@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "./styles.css";
 
 export const CreateLobby = () => {
-  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [lobbyId, setLobbyId] = useState("");
+
   function makeid(length) {
     let result = "";
     const characters =
@@ -36,8 +35,34 @@ export const CreateLobby = () => {
     setLobbyId(lobbyId);
   };
 
+  const copyUrlToClipboard = async () => {
+    try {
+      // Write the lobby ID to the clipboard
+      await navigator.clipboard.writeText(
+        window.location.origin + "/" + lobbyId
+      );
+      // Show a confirmation message with the URL
+      console.log(window.location.href, "hehe");
+      alert(
+        `URL copied to clipboard!\nYou can share the lobby URL: ${
+          window.location.href + "/" + lobbyId
+        }`
+      );
+    } catch (error) {
+      // Handle any errors that might occur
+      console.error("Failed to copy lobby ID to clipboard:", error);
+      // Optionally, provide user feedback or notify them of the failure
+      alert("Failed to copy lobby ID to clipboard. Please try again.");
+    }
+  };
+
   const goToLobby = () => {
-    window.open(`/${lobbyId}`, "_blank");
+    const lobbyUrl = `${window.location.origin}/${lobbyId}/?goToLobby=true&name=${name}`;
+   
+   window.open(lobbyUrl, "_blank");
+    // Update state using navigate
+
+    // Focus on the new tab
   };
 
   return (
@@ -48,17 +73,36 @@ export const CreateLobby = () => {
       {!lobbyId ? (
         <div className="create-lobby-container">
           <h1> Enter your name and create a lobby </h1>
-          <input type="text" onChange={(e) => setName(e.target.value)} />
-          <button onClick={createLobby} disabled={!name.length}>
-            Create Lobby
+          <div className="lobby-input-container">
+            <input
+              height={40}
+              type="text"
+              onChange={(e) => setName(e.target.value)}
+            />
+            <button onClick={createLobby} disabled={!name.length}>
+              Create Lobby
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button style={{ cursor: "pointer" }} onClick={goToLobby}>
+            Go to game lobby 
+          </button>
+          <br />
+          <button
+            style={{
+              cursor: "pointer",
+              textDecoration: "none",
+            
+              alignSelf: "center",
+            }}
+            onClick={copyUrlToClipboard}
+          >
+           Share this URL to invite 
           </button>
         </div>
-      ): (
-		<div>
-			Go To game lobbby {lobbyId}
-		</div>
-	  )}
-      
+      )}
     </>
   );
 };

@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams,useSearchParams } from "react-router-dom";
 
 const Lobby = () => {
 	const location = useLocation();
-	const navigate = useNavigate();
+	const params = useParams();
+	const [searchParams] = useSearchParams();
 
-	const [name, setName] = useState(location?.state?.name || "");
-	const [player, setPlayer] = useState(location?.state?.name || "");
+	const [name, setName] = useState(searchParams.get("name")|| "");
+	const [player, setPlayer] = useState(searchParams.get("name")|| "");
 	const [waiting, setWaiting] = useState(true);
 	const [message, setMessage] = useState(
 		"Share the lobby url to invite the game"
 	);
 	const [selectedOption, setSelectedOption] = useState();
 
-	const params = useParams();
 	const lobbyId = params.lobbyId;
 	const [latestLobbies, setLatestLobbies] = useState(
 		JSON.parse(window.localStorage.getItem("lobbies")) || []
@@ -29,6 +29,8 @@ const Lobby = () => {
 		});
 	});
 
+	console.log(player, "hehe");
+
 	useEffect(() => {
 		// const isPlayerPresent
 		const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
@@ -42,6 +44,7 @@ const Lobby = () => {
 		}
 	}, [latestLobbies, lobbyId]);
 
+	console.log(location,"aa");
 	const joinLobby = () => {
 		setPlayer(() => name);
 		const tempLobbies = JSON.parse(localStorage.getItem("lobbies")) || [];
@@ -131,10 +134,11 @@ const Lobby = () => {
 		const p2 = currentLobby?.players.pop();
 		const currentPlayer = currentLobby?.players?.find((x) => x.name === player);
 	};
+	const pathname = window.location.pathname
 
 	return (
 		<div>
-			<p>Lobby</p>
+			<p>Lobby </p>
 
 			{player ? (
 				<p>Your name is: {name}</p>
