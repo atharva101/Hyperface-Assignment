@@ -19,9 +19,8 @@ const Lobby = () => {
     JSON.parse(window.localStorage.getItem("lobbies")) || []
   );
   const [gameStatus, setGameStatus] = useState([]);
-  const [playerScore, setPlayerScore] = useState(0); // Set initial score to 0
-  //not used but can be used to scale
-  const [opponentScore, setOpponentScore] = useState(0); // Set initial score to 0
+  const [playerScore, setPlayerScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState(0);
 
   const opponent = latestLobbies
     ?.find((lobby) => lobby.lobbyName === lobbyId)
@@ -140,7 +139,7 @@ const Lobby = () => {
       <>
         <p>Waiting for opponent</p>
         <p>Your selection is : {selectedOption}</p>
-        <div>
+        <div className="rps-button-container">
           <button
             className="rock-button animated-button"
             onClick={() => setSelectedOption("Rock")}
@@ -157,7 +156,7 @@ const Lobby = () => {
             className="scissors-button animated-button"
             onClick={() => setSelectedOption("Scissor")}
           >
-            Scissor
+           Scissor
           </button>
         </div>
         <div>Click on done to confirm selection</div>
@@ -205,7 +204,6 @@ const Lobby = () => {
         gameStatusMessage = "It's a Tie";
       }
 
-      // Update local storage
       const gameResult = {
         currentPlayer: currentPlayer.name,
         opponent: opponent.name,
@@ -236,14 +234,10 @@ const Lobby = () => {
     const oponent = currentLobby?.players?.find(
       (x) => x.selectedOption !== "" && x.playing === true && x.name !== player
     );
-    // set score when oponent has played for cuurent player. (listening storage events)
 
     currentPlayer?.score && setPlayerScore(currentPlayer.score);
     oponent?.score && setOpponentScore(oponent.score);
   }, [latestLobbies]);
-  console.log(opponent, "op");
-  console.log(player, playerScore, "pleayer");
-  console.log(gameStatus, "status");
 
   return (
     <div className="lobby-container">

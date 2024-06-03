@@ -1,71 +1,78 @@
-.lobby-container{
-    text-align: center;
+.lobby-container {
+  text-align: center;
 }
 
+.rps-button-container {
+  justify-content: center;
+  display: flex;
+  gap: 34px;
+  margin: 30px;
+  flex-wrap: wrap;
+}
 
 /* Rock Button */
 .rock-button {
-    background-color: #888;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  background-color: #888;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.rock-button:hover {
+  background-color: #666;
+}
+
+/* Paper Button */
+.paper-button {
+  background-color: #66c0f4;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.paper-button:hover {
+  background-color: #4fa9e8;
+}
+
+/* Scissors Button */
+.scissors-button {
+  background-color: #aaa;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scissors-button:hover {
+  background-color: #888;
+}
+
+/* Animation */
+@keyframes buttonScale {
+  0% {
+    transform: scale(1);
   }
-  
-  .rock-button:hover {
-    background-color: #666;
+
+  50% {
+    transform: scale(1.1);
   }
-  
-  /* Paper Button */
-  .paper-button {
-    background-color: #66c0f4;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+
+  100% {
+    transform: scale(1);
   }
-  
-  .paper-button:hover {
-    background-color: #4fa9e8;
-  }
-  
-  /* Scissors Button */
-  .scissors-button {
-    background-color: #aaa;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .scissors-button:hover {
-    background-color: #888;
-  }
-  
-  /* Animation */
-  @keyframes buttonScale {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  
-  .animated-button {
-    animation: buttonScale 0.5s ease;
-  }
-  
-  
+}
+
+.animated-button {
+  animation: buttonScale 0.5s ease;
+}
