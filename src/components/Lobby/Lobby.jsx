@@ -18,8 +18,9 @@ const Lobby = () => {
   const [latestLobbies, setLatestLobbies] = useState(
     JSON.parse(window.localStorage.getItem("lobbies")) || []
   );
-  const [gameStatus, setGameStatus] = useState("");
+  const [gameStatus, setGameStatus] = useState([]);
   const [playerScore, setPlayerScore] = useState(0); // Set initial score to 0
+  //not used but can be used to scale
   const [opponentScore, setOpponentScore] = useState(0); // Set initial score to 0
 
   const opponent = latestLobbies
@@ -32,7 +33,7 @@ const Lobby = () => {
       const gameResult = JSON.parse(localStorage.getItem("gameStatus"));
       if (gameResult) {
         // Update the game status and scores in your component's state
-        setGameStatus(gameResult.gameStatus);
+        setGameStatus([gameResult]);
         setPlayerScore(gameResult.playerScore);
         setOpponentScore(gameResult.opponentScore);
       }
@@ -58,6 +59,12 @@ const Lobby = () => {
 
   const joinLobby = () => {
     setPlayer(() => name);
+
+    // Update query parameter with the player's name
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    urlSearchParams.set("name", name);
+    const newUrl = window.location.pathname + "?" + urlSearchParams.toString();
+    window.history.replaceState({}, "", newUrl);
     const tempLobbies = JSON.parse(localStorage.getItem("lobbies")) || [];
     const currentLobby = tempLobbies.find((x) => x.lobbyName === lobbyId);
 
@@ -167,51 +174,48 @@ const Lobby = () => {
     const opponent = currentLobby?.players?.find(
       (x) => x.selectedOption !== "" && x.playing === true && x.name !== player
     );
-  
+
     const currentPlayerSelection = currentPlayer?.selectedOption;
     const opponentSelection = opponent?.selectedOption;
-  
+
     if (
       currentPlayerSelection &&
       opponentSelection &&
       currentPlayerSelection !== "" &&
       opponentSelection !== ""
     ) {
-      let gameStatus;
+      let gameStatusMessage;
       if (
-        (currentPlayerSelection === "Rock" && opponentSelection === "Scissor") ||
+        (currentPlayerSelection === "Rock" &&
+          opponentSelection === "Scissor") ||
         (currentPlayerSelection === "Paper" && opponentSelection === "Rock") ||
         (currentPlayerSelection === "Scissor" && opponentSelection === "Paper")
       ) {
         currentPlayer.score += 1;
-        opponent.score -= 1;
-        gameStatus = `${currentPlayer.name} Won`;
+        gameStatusMessage = `${currentPlayer.name} Won`;
       } else if (
-        (opponentSelection === "Rock" && currentPlayerSelection === "Scissor") ||
+        (opponentSelection === "Rock" &&
+          currentPlayerSelection === "Scissor") ||
         (opponentSelection === "Paper" && currentPlayerSelection === "Rock") ||
         (opponentSelection === "Scissor" && currentPlayerSelection === "Paper")
       ) {
-        currentPlayer.score -= 1;
         opponent.score += 1;
-        gameStatus = `${currentPlayer.name} Lost`;
+        gameStatusMessage = `${currentPlayer.name} Lost`;
       } else {
-        gameStatus = "It's a Tie";
+        gameStatusMessage = "It's a Tie";
       }
-  
-      setPlayerScore(currentPlayer.score);
-      setOpponentScore(opponent.score);
-      setGameStatus(gameStatus);
-  
+
       // Update local storage
       const gameResult = {
         currentPlayer: currentPlayer.name,
         opponent: opponent.name,
-        gameStatus,
+        gameStatus: gameStatusMessage,
         playerScore: currentPlayer.score,
-        opponentScore: opponent.score
+        opponentScore: opponent.score,
       };
+      setGameStatus([gameResult]);
       localStorage.setItem("gameStatus", JSON.stringify(gameResult));
-  
+
       const updatedLobbies = latestLobbies.map((lobby) =>
         lobby.lobbyName === lobbyId ? currentLobby : lobby
       );
@@ -237,6 +241,9 @@ const Lobby = () => {
     currentPlayer?.score && setPlayerScore(currentPlayer.score);
     oponent?.score && setOpponentScore(oponent.score);
   }, [latestLobbies]);
+  console.log(opponent, "op");
+  console.log(player, playerScore, "pleayer");
+  console.log(gameStatus, "status");
 
   return (
     <div className="lobby-container">
@@ -244,11 +251,28 @@ const Lobby = () => {
         <>
           <p>Hi {name.toUpperCase()} !! </p>
           {showButtons()}
-          {!!gameStatus && <span>{gameStatus}</span>}
-
-          {playerScore !== undefined && <span> Your score {playerScore}</span>}
-          {opponentScore !== undefined && (
-            <span> Opponent's score {opponentScore}</span>
+          {!!gameStatus?.[0] && !!opponent && !!player && (
+            <>
+              <span>{gameStatus?.[0]?.gameStatus}</span>
+              {playerScore !== undefined && (
+                <span>
+                  {" "}
+                  Your score{" "}
+                  {gameStatus?.[0]?.currentPlayer === player
+                    ? gameStatus?.[0]?.playerScore
+                    : gameStatus?.[0]?.opponentScore}
+                </span>
+              )}
+              {opponent?.score !== undefined && (
+                <span>
+                  {" "}
+                  {opponent?.name} score{" "}
+                  {gameStatus?.[0]?.opponent === opponent?.name
+                    ? gameStatus?.[0]?.opponentScore
+                    : gameStatus?.[0]?.playerScore}
+                </span>
+              )}
+            </>
           )}
         </>
       ) : (
@@ -265,4 +289,3 @@ const Lobby = () => {
 };
 
 export default Lobby;
-
