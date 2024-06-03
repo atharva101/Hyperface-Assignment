@@ -1,7 +1,9 @@
 import "./styles.css"
 
-const Card = ({ children }) => {
-  return <div className="card-container">{children}</div>;
+const Card = ({ children, heading }) => {
+  return <div className="card-container">
+    <h1>{heading}</h1>
+    {children}</div>;
 };
 
 

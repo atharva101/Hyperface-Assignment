@@ -8,28 +8,38 @@ export const CreateLobby = () => {
   const [gameLobbyPlayers, setGameLobbyPlayers] = useState([]);
   const [waitingLobbyPlayers, setWaitingLobbyPlayers] = useState([]);
   const [leaderBoardData, setLeaderBoardData] = useState([]);
-
   useEffect(() => {
-    const lobbies = JSON.parse(localStorage.getItem("lobbies") || "[]");
-	const allPlayers = lobbies?.flatMap(lobby => lobby.players);
-
-    const gameLobbyPlayers = lobbies?.flatMap((lobbyData) =>
-      lobbyData.players.filter((player) => player.playing === true)
-    );
-
-    const waitingLobbyPlayers = lobbies?.flatMap((lobbyData) =>
-      lobbyData.players.filter((player) => player.playing !== true)
-    );
-
-    
-    // Sort players based on their score in descending order
-    const sortedPlayers = allPlayers?.sort((a, b) => b.score - a.score);
-	
-    setGameLobbyPlayers(gameLobbyPlayers);
-    setWaitingLobbyPlayers(waitingLobbyPlayers);
-	setLeaderBoardData(sortedPlayers)
-
-  }, [localStorage]);
+	const updateStateFromLocalStorage = () => {
+	  const lobbies = JSON.parse(localStorage.getItem("lobbies") || "[]");
+	  const allPlayers = lobbies?.flatMap((lobby) => lobby.players);
+  
+	  const gameLobbyPlayers = lobbies?.flatMap((lobbyData) =>
+		lobbyData.players.filter((player) => player.playing === true)
+	  );
+  
+	  const waitingLobbyPlayers = lobbies?.flatMap((lobbyData) =>
+		lobbyData.players.filter((player) => player.playing !== true)
+	  );
+  
+	  // Sort players based on their score in descending order
+	  const sortedPlayers = allPlayers?.sort((a, b) => b.score - a.score);
+  
+	  setGameLobbyPlayers(gameLobbyPlayers);
+	  setWaitingLobbyPlayers(waitingLobbyPlayers);
+	  setLeaderBoardData(sortedPlayers);
+	};
+  
+	// Subscribe to changes in local storage
+	window.addEventListener("storage", updateStateFromLocalStorage);
+  
+	// Fetch initial state from local storage
+	updateStateFromLocalStorage();
+  
+	// Clean up event listener
+	return () => {
+	  window.removeEventListener("storage", updateStateFromLocalStorage);
+	};
+  }, []);
   function makeid(length) {
     let result = "";
     const characters =
@@ -91,9 +101,9 @@ export const CreateLobby = () => {
     // Focus on the new tab
   };
 
-  console.log(waitingLobbyPlayers, "waiting");
-  console.log(gameLobbyPlayers, "lobby");
-  console.log(leaderBoardData, "leaderboard");
+//   console.log(waitingLobbyPlayers, "waiting");
+//   console.log(gameLobbyPlayers, "lobby");
+//   console.log(leaderBoardData, "leaderboard");
 
   return (
     <>
@@ -132,12 +142,82 @@ export const CreateLobby = () => {
           </button>
         </div>
       )}
-	{
-		
-	}
-      <Card heading={"Game Lobby"}>
 
-	  </Card>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "20px",
+          margin: "60px",
+        }}
+      >
+        {!!gameLobbyPlayers?.length && (
+          <Card heading={"Game Lobby"}>
+            <div>
+              <ol>
+                {gameLobbyPlayers.map((player) => (
+                  <li>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "20px",
+                      }}
+                    >
+                      <span>{player.name}</span>
+                      <button>Play</button>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Card>
+        )}
+        {!!leaderBoardData?.length && (
+          <Card heading={"Leaderboard"}>
+            <div>
+              <ol>
+                {leaderBoardData.map((player) => (
+                  <li>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>{player.name}</span>
+                      <span>{player.score}</span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Card>
+        )}
+        {!!waitingLobbyPlayers?.length && (
+          <Card heading={"Waiting Lobby"}>
+            <div>
+              <ol>
+                {waitingLobbyPlayers.map((player) => (
+                  <li>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "20px",
+                      }}
+                    >
+                      <span>{player.name}</span>
+                      <button>Play</button>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Card>
+        )}
+      </div>
     </>
   );
 };

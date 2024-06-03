@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import "./styles.css";
+
 const Lobby = () => {
-  const location = useLocation();
   const params = useParams();
   const [searchParams] = useSearchParams();
 
@@ -18,27 +18,32 @@ const Lobby = () => {
   const [latestLobbies, setLatestLobbies] = useState(
     JSON.parse(window.localStorage.getItem("lobbies")) || []
   );
-  const [gameStatus,setGameStatus] = useState("")
-  const [playerScore, setPlayerScore] = useState()
-  const [opponentScore, setOpponentScore] = useState()
-  console.log("latestLobbies", latestLobbies);
-  // get latest lobbies everytime the storage changes
-  useEffect(() => {
-    window.addEventListener("storage", () => {
-      // When local storage changes, dump the list to
-      // the console.
-      setLatestLobbies(JSON.parse(window.localStorage.getItem("lobbies")));
-    });
-  });
+  const [gameStatus, setGameStatus] = useState("");
+  const [playerScore, setPlayerScore] = useState();
+  const [opponentScore, setOpponentScore] = useState();
+
+  const opponent = latestLobbies
+    ?.find((lobby) => lobby.lobbyName === lobbyId)
+    ?.players?.find((x) => x.playing === true && x.name !== player);
 
   useEffect(() => {
-    // const isPlayerPresent
+    const handleStorageChange = () => {
+      setLatestLobbies(JSON.parse(window.localStorage.getItem("lobbies")));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
     if (currentLobby?.players && currentLobby?.players?.length > 1) {
-      // lobby has more than 1 players
       setWaiting(false);
     } else if (currentLobby?.players && currentLobby?.players?.length === 1) {
-      setMessage("enter name to join your friend");
+      setMessage("Enter name to join your friend");
     } else {
       setWaiting(true);
     }
@@ -47,29 +52,13 @@ const Lobby = () => {
   const joinLobby = () => {
     setPlayer(() => name);
     const tempLobbies = JSON.parse(localStorage.getItem("lobbies")) || [];
-
     const currentLobby = tempLobbies.find((x) => x.lobbyName === lobbyId);
+
     if (currentLobby) {
       if (currentLobby?.players?.find((y) => y.name === name)) {
-        alert("already name in lobby");
+        alert("Name already in lobby");
       } else {
-        // if lobby present
-        if (currentLobby?.players && currentLobby?.players?.length > 1) {
-          //lobby has 1 player
-          currentLobby?.players?.push({
-            name: name.toLowerCase(),
-            selectedOption: "",
-            playing: false,
-            score: 0,
-          });
-
-          // lobby has more than 1 players
-
-          setWaiting(false);
-        } else if (
-          currentLobby?.players &&
-          currentLobby?.players?.length === 1
-        ) {
+        if (currentLobby?.players?.length === 1) {
           currentLobby?.players?.push({
             name: name.toLowerCase(),
             selectedOption: "",
@@ -77,9 +66,14 @@ const Lobby = () => {
             score: 0,
           });
           setWaiting(false);
-          setMessage("enter name to join your friend");
         } else {
-          setWaiting(true);
+          currentLobby?.players?.push({
+            name: name.toLowerCase(),
+            selectedOption: "",
+            playing: false,
+            score: 0,
+          });
+          setWaiting(false);
         }
       }
     } else {
@@ -96,22 +90,27 @@ const Lobby = () => {
       });
     }
 
-    console.log("nayi lobby banai ", tempLobbies);
     setLatestLobbies(tempLobbies);
     localStorage.setItem("lobbies", JSON.stringify(tempLobbies));
-    // localStorage.setItem("lobbies", JSON.stringify(lobbies));
     setWaiting(false);
   };
 
-  // set the option in localstorage
   const handleSelection = () => {
-    setDisableDone(!disableDone);
-    const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
-    const currentPlayer = currentLobby?.players?.find((x) => x.name === player);
-    if (currentPlayer) currentPlayer.selectedOption = selectedOption;
-    else console.log("name not in lobby");
-    window.localStorage.setItem("lobbies", JSON.stringify(latestLobbies));
-    showResult();
+    setDisableDone(true);
+    const updatedLobbies = latestLobbies.map((lobby) => {
+      if (lobby.lobbyName === lobbyId) {
+        return {
+          ...lobby,
+          players: lobby.players.map((p) =>
+            p.name === player ? { ...p, selectedOption } : p
+          ),
+        };
+      }
+      return lobby;
+    });
+
+    setLatestLobbies(updatedLobbies);
+    localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
   };
 
   const showButtons = () => {
@@ -121,7 +120,7 @@ const Lobby = () => {
       <p>{message}</p>
     ) : !currentPlayer?.playing ? (
       <>
-        <span>You are in waiting lobby</span>
+        <span>You are in the waiting lobby</span>
       </>
     ) : (
       <>
@@ -147,7 +146,7 @@ const Lobby = () => {
             Scissor
           </button>
         </div>
-        <div>Click on done for confirming selection</div>
+        <div>Click on done to confirm selection</div>
         <button onClick={handleSelection} disabled={disableDone}>
           Done
         </button>
@@ -156,31 +155,33 @@ const Lobby = () => {
   };
 
   const showResult = () => {
-    //get current lobby data
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
-    //get active tab player
     const currentPlayer = currentLobby?.players?.find((x) => x.name === player);
-    //get active tab opponent
     const oponent = currentLobby?.players?.find(
       (x) => x.selectedOption !== "" && x.playing === true && x.name !== player
     );
 
-    console.log(oponent, "oponenet");
-    console.log(currentPlayer, "current");
-    
     const currentPlayerSelection = currentPlayer?.selectedOption;
     const oponentSelection = oponent?.selectedOption;
-    if (currentPlayer.selectedOption !== "" && oponentSelection !== "" && oponentSelection !== undefined) {
+
+    if (
+      currentPlayerSelection &&
+      oponentSelection &&
+      currentPlayerSelection !== "" &&
+      oponentSelection !== ""
+    ) {
       if (
         (currentPlayerSelection === "Rock" && oponentSelection === "Scissor") ||
         (currentPlayerSelection === "Paper" && oponentSelection === "Rock") ||
         (currentPlayerSelection === "Scissor" && oponentSelection === "Paper")
       ) {
-        console.log("You win!");
         currentPlayer.score += 1;
-        oponent.score -= 1
-        setGameStatus(currentPlayer.name  + "Won")
-        updateLatestLobbies();
+        oponent.score -= 1;
+        setPlayerScore(currentPlayer.score);
+        setOpponentScore(oponent.score);
+        console.log(currentPlayer.score, "current1");
+        console.log(oponent.score, "ope21");
+        setGameStatus(`${currentPlayer.name} Won`);
       } else if (
         (oponentSelection === "Rock" && currentPlayerSelection === "Scissor") ||
         (oponentSelection === "Paper" && currentPlayerSelection === "Rock") ||
@@ -188,41 +189,54 @@ const Lobby = () => {
       ) {
         currentPlayer.score -= 1;
         oponent.score += 1;
-        setGameStatus(currentPlayer.name  + "Lose")
-        updateLatestLobbies();       
+        console.log(currentPlayer.score, "current1");
+        console.log(oponent.score, "ope21");
+        setPlayerScore(currentPlayer.score);
+        setOpponentScore(oponent.score);
+        setGameStatus(`${currentPlayer.name} Lose`);
       } else {
-        updateLatestLobbies();
-        setGameStatus( "It's a Tie")
-        setPlayerScore(currentPlayer.score)
-        setOpponentScore(oponent.score)
+        setGameStatus("It's a Tie");
       }
+      setPlayerScore(currentPlayer.score);
+      setOpponentScore(oponent.score);
+      console.log(currentPlayer.score, "current1");
+      console.log(oponent.score, "ope21");
+      const updatedLobbies = latestLobbies.map((lobby) =>
+        lobby.lobbyName === lobbyId ? currentLobby : lobby
+      );
+
+      setLatestLobbies(updatedLobbies);
+      localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
     }
   };
 
-  function updateLatestLobbies(currentLobby, latestLobbies) {
-    latestLobbies?.forEach((lobby) => {
-      lobby?.players?.forEach((player) => {
-        if (player.name === currentLobby.name) {
-          player.selectedOption = currentLobby.selectedOption;
-          player.playing = currentLobby.playing;
-          player.score = currentLobby.score;
-        }
-      });
-    });
-  }
+  useEffect(() => {
+    if (selectedOption && opponent?.selectedOption) {
+      showResult();
+    }
+  }, [selectedOption, opponent?.selectedOption]);
 
   useEffect(() => {
-    localStorage.setItem("lobbies", JSON.stringify(latestLobbies));
+    const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
+    const currentPlayer = currentLobby?.players?.find((x) => x.name === player);
+    const oponent = currentLobby?.players?.find(
+      (x) => x.selectedOption !== "" && x.playing === true && x.name !== player
+    );
+    currentPlayer?.score && setPlayerScore(currentPlayer.score)
+    oponent?.score && setOpponentScore(oponent.score)
   }, [latestLobbies]);
   return (
     <div className="lobby-container">
       {player ? (
         <>
-          <p>Hi {name.toLocaleUpperCase()} !! </p>
+          <p>Hi {name.toUpperCase()} !! </p>
           {showButtons()}
           {gameStatus && <span>{gameStatus}</span>}
-          {playerScore && <span> Your score {playerScore}</span>}
-          {opponentScore && <span> Opponent Score score {opponentScore}</span>}
+
+          {playerScore !== undefined && <span> Your score {playerScore}</span>}
+          {opponentScore !== undefined && (
+            <span> Opponent's score {opponentScore}</span>
+          )}
         </>
       ) : (
         <>
