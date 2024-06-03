@@ -1,5 +1,4 @@
 .heading-container {
-  background: #191c29;
   width: fit-content;
   height: var(--card-height);
   position: relative;
@@ -9,11 +8,9 @@
   text-align: center;
   display: flex;
   font-size: 1.5em;
-  color: white;
   cursor: pointer;
   margin: auto;
   margin-bottom: 20px;
-  margin-top: 20px;
   transition: color 1s;
   box-sizing: border-box;
   padding: 15px;
@@ -64,13 +61,17 @@
 }
 
 .heading {
-  color: white
+  color: #d3e3ee;
+  font-family:  Helvetica, sans-serif;
+
 }
 
 .create-lobby-container{
   margin: 20px;
   display: flex;
   gap: 20px;
+  justify-content: center;
+  color: wheat;
 }
 
 .lobby-input-container{
@@ -89,4 +90,12 @@ input{
 button{
   min-height: 32px;
   align-self: center;
+  background-color: wheat;
+  border-radius: 8px;
+  border: none;
+}
+
+button:disabled{
+  background-color: rgb(72, 69, 69);
+  color: grey;
 }
