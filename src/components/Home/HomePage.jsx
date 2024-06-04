@@ -14,15 +14,15 @@ export const CreateLobby = () => {
 	  const allPlayers = lobbies?.flatMap((lobby) => lobby.players);
   
 	  const gameLobbyPlayers = lobbies?.flatMap((lobbyData) =>
-		lobbyData.players.filter((player) => player.playing === true)
+		lobbyData.players.filter((player) => player?.playing === true)
 	  );
   
 	  const waitingLobbyPlayers = lobbies?.flatMap((lobbyData) =>
-		lobbyData.players.filter((player) => player.playing !== true)
+		lobbyData.players.filter((player) => player?.playing !== true)
 	  );
   
 	  // Sort players based on their score in descending order
-	  const sortedPlayers = allPlayers?.sort((a, b) => b.score - a.score);
+	  const sortedPlayers = allPlayers?.sort((a, b) => b?.score - a?.score);
   
 	  setGameLobbyPlayers(gameLobbyPlayers);
 	  setWaitingLobbyPlayers(waitingLobbyPlayers);
@@ -60,7 +60,7 @@ export const CreateLobby = () => {
       lobbyName: lobbyId,
       players: [
         {
-          name: name.toLowerCase(),
+          name: name?.toLowerCase(),
           selectedOption: "",
           playing: true,
           score: 0,
@@ -186,8 +186,8 @@ export const CreateLobby = () => {
                         justifyContent: "space-between",
                       }}
                     >
-                      <span>{player.name}</span>
-                      <span>{player.score}</span>
+                      <span>{player?.name}</span>
+                      <span>{player?.score}</span>
                     </div>
                   </li>
                 ))}
@@ -208,7 +208,7 @@ export const CreateLobby = () => {
                         gap: "20px",
                       }}
                     >
-                      <span>{player.name}</span>
+                      <span>{player?.name}</span>
                       <button>Play</button>
                     </div>
                   </li>

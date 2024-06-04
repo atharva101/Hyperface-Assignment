@@ -76,3 +76,11 @@
 .animated-button {
   animation: buttonScale 0.5s ease;
 }
+
+.rematch-button{
+  display: block;
+  text-align: center;
+  background:wheat ;
+  margin: auto;
+  cursor: pointer;
+}
