@@ -7,11 +7,7 @@ function App() {
   return (
     <div
       style={{
-        backgroundColor: "black",
-        backgroundSize: "cover",
-        width: "100vw",
-        height: "100vh",
-        padding: "20px",
+      
       }}
     >
       <Routes>

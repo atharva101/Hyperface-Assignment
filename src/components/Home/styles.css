@@ -1,6 +1,6 @@
 .heading-container {
   width: fit-content;
-  height: var(--card-height);
+  max-height: fit-content;
   position: relative;
   border-radius: 6px;
   justify-content: center;
@@ -11,6 +11,7 @@
   cursor: pointer;
   margin: auto;
   margin-bottom: 20px;
+  margin-top: 30px;
   transition: color 1s;
   box-sizing: border-box;
   padding: 15px;
@@ -46,40 +47,44 @@
 }
 
 @keyframes borderColorChange {
-  0%, 100% {
-      border-top-color: #ff0066;
-      border-right-color: #ff0066;
-      border-bottom-color: #0066ff;
-      border-left-color: #0066ff;
+
+  0%,
+  100% {
+    border-top-color: #ff0066;
+    border-right-color: #ff0066;
+    border-bottom-color: #0066ff;
+    border-left-color: #0066ff;
   }
+
   50% {
-      border-top-color: #ffcc00;
-      border-right-color: #ffcc00;
-      border-bottom-color: #00ffcc;
-      border-left-color: #00ffcc;
+    border-top-color: #ffcc00;
+    border-right-color: #ffcc00;
+    border-bottom-color: #00ffcc;
+    border-left-color: #00ffcc;
   }
 }
 
 .heading {
   color: #d3e3ee;
-  font-family:  Helvetica, sans-serif;
+  font-family: Helvetica, sans-serif;
 
 }
 
-.create-lobby-container{
+.create-lobby-container {
   margin: 20px;
   display: flex;
   gap: 20px;
   justify-content: center;
   color: wheat;
+  flex-wrap: wrap;
 }
 
-.lobby-input-container{
+.lobby-input-container {
   display: flex;
   gap: 20px;
 }
 
-input{
+input {
   align-self: center;
   height: 20px !important;
   border-radius: 8px;
@@ -87,7 +92,7 @@ input{
   max-height: 10px;
 }
 
-button{
+button {
   min-height: 32px;
   align-self: center;
   background-color: wheat;
@@ -95,7 +100,22 @@ button{
   border: none;
 }
 
-button:disabled{
+button:disabled {
   background-color: rgb(72, 69, 69);
   color: grey;
+}
+
+.data-view-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 70px;
+  margin: 60px;
+}
+
+.card-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px
 }

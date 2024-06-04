@@ -2,13 +2,15 @@ html, body {
   height: 100%;
   width: 100%;
   margin: 0;
-  overflow: hidden; /* Prevents scrollbar from appearing */
+  overflow: hidden; 
   background: #212534;
   display: flex;
   align-items: center;
   flex-direction: column;
   box-sizing: border-box;
   color: white;
-  overflow-y: scroll
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  
 }
 
