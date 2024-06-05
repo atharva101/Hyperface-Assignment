@@ -1,5 +1,6 @@
 .lobby-container {
   text-align: center;
+  margin-top: 20px;
 }
 
 .rps-button-container {
@@ -76,11 +77,43 @@
 .animated-button {
   animation: buttonScale 0.5s ease;
 }
+.done-section{
+  display: flex;
+  gap: 20px;
+  margin: auto;
+  justify-content: center;
+  flex-direction: column
+}
 
 .rematch-button{
-  display: block;
   text-align: center;
   background:wheat ;
-  margin: auto;
+  /* margin: auto; */
   cursor: pointer;
+  margin: 20px;
+}
+
+.game-status{
+  display: block;
+  font-size: 30px;
+  margin: 20px;
+}
+.won {
+  color: rgb(99, 225, 99);
+  z-index: 1;
+}
+
+.lost {
+  color: red;
+}
+
+.tie{
+  color: yellow
+}
+
+.score-span{
+  font-size: 20px;
+  display: block;
+  margin: 20px;
+
 }

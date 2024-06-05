@@ -5,7 +5,6 @@ import "./styles.css";
 const Lobby = () => {
   const params = useParams();
   const [searchParams] = useSearchParams();
-
   const [name, setName] = useState(searchParams.get("name") || "");
   const [player, setPlayer] = useState(searchParams.get("name") || "");
   const [waiting, setWaiting] = useState(true);
@@ -18,21 +17,26 @@ const Lobby = () => {
   const [latestLobbies, setLatestLobbies] = useState(
     JSON.parse(window.localStorage.getItem("lobbies")) || []
   );
-  const [gameStatus, setGameStatus] = useState(
-    JSON.parse(localStorage.getItem("gameStatus")) || {}
-  );
+  const [gameStatus, setGameStatus] = useState();
+
+  // can be used for scalability
   const [playerScore, setPlayerScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
   const [showStart, setShowStart] = useState(false);
-  const opponent = latestLobbies
-    ?.find((lobby) => lobby.lobbyName === lobbyId)
-    ?.players?.find((x) => x?.playing === true && x?.name !== player);
+  const [opponent, setOpponent] = useState();
+  // const opponent = latestLobbies
+  //   ?.find((lobby) => lobby.lobbyName === lobbyId)
+  //   ?.players?.find((x) => x?.playing === true && x?.name !== player);
+
+  //listen to storage change
 
   useEffect(() => {
     const handleStorageChange = () => {
       const lobbies = JSON.parse(window.localStorage.getItem("lobbies"));
+
       setLatestLobbies(lobbies);
       const gameResult = JSON.parse(localStorage.getItem("gameStatus"));
+      
       if (gameResult) {
         setGameStatus(gameResult);
         setPlayerScore(gameResult.playerScore);
@@ -42,6 +46,12 @@ const Lobby = () => {
       const currentPlayer = currentLobby?.players?.find(
         (x) => x?.name === player
       );
+      const opponent = currentLobby?.players?.find(
+        (x) => x?.playing === true && x?.name !== player
+      );
+      if (opponent) {
+        setOpponent(opponent);
+      }
       if (currentPlayer) {
         setSelectedOption(currentPlayer.selectedOption);
         setDisableDone(currentPlayer.selectedOption !== "");
@@ -55,17 +65,19 @@ const Lobby = () => {
     };
   }, [lobbyId, player]);
 
-  
   useEffect(() => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
     if (currentLobby?.players && currentLobby?.players?.length > 1) {
       setWaiting(false);
     } else if (currentLobby?.players && currentLobby?.players?.length === 1) {
       setMessage("Enter name to join your friend");
+      setWaiting(true);
     } else {
       setWaiting(true);
     }
   }, [latestLobbies]);
+
+  
 
   const joinLobby = () => {
     setPlayer(name);
@@ -80,9 +92,11 @@ const Lobby = () => {
     const currentLobby = tempLobbies.find((x) => x.lobbyName === lobbyId);
 
     if (currentLobby) {
+      //handle unique username
       if (currentLobby?.players?.find((y) => y.name === name)) {
-        alert("Name already in lobby");
+        alert("Username already in lobby");
       } else {
+        // only one player in lobby
         if (currentLobby?.players?.length === 1) {
           currentLobby?.players?.push({
             name: name.toLowerCase(),
@@ -92,6 +106,7 @@ const Lobby = () => {
           });
           setWaiting(false);
         } else if (
+          // when less than 2 player
           currentLobby.players?.filter((player) => player.playing === true)
             .length < 2
         ) {
@@ -103,6 +118,7 @@ const Lobby = () => {
           });
           setWaiting(false);
         } else {
+          // push all players
           currentLobby?.players?.push({
             name: name.toLowerCase(),
             selectedOption: "",
@@ -113,6 +129,7 @@ const Lobby = () => {
         }
       }
     } else {
+      // adding existing lobbies from storage
       tempLobbies.push({
         lobbyName: lobbyId,
         players: [
@@ -132,6 +149,10 @@ const Lobby = () => {
 
   const handleSelection = () => {
     setDisableDone(true);
+    setGameStatus([])
+    setPlayerScore(0)
+    setOpponentScore(0)
+    localStorage.removeItem("gameStatus")
     const updatedLobbies = latestLobbies.map((lobby) => {
       if (lobby.lobbyName === lobbyId) {
         return {
@@ -143,13 +164,28 @@ const Lobby = () => {
       }
       return lobby;
     });
-    setGameStatus([])
-    localStorage.removeItem("gameStatus")
     setLatestLobbies(updatedLobbies);
     localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
-  };
 
-  const playWithAnotherPlayer = () => {
+    // Check if both players have selected an option
+    const currentPlayer = updatedLobbies
+      .find((lobby) => lobby.lobbyName === lobbyId)
+      .players.find((p) => p.name === player);
+
+    const opponent = updatedLobbies
+      .find((lobby) => lobby.lobbyName === lobbyId)
+      .players.find((p) => p.playing && p.name !== player);
+
+    if (!currentPlayer.selectedOption || !opponent.selectedOption) {
+      localStorage.removeItem("gameStatus");
+    }
+  };
+  useEffect(() => {
+    if (opponent?.selectedOption === "" || selectedOption === "")
+      localStorage.removeItem("gameStatus");
+  }, [opponent?.selectedOption, selectedOption]);
+
+  const handleExitMatch = () => {
     const updatedLobbies = latestLobbies.map((lobby) => {
       if (lobby.lobbyName === lobbyId) {
         // Find the player who is in the waiting lobby
@@ -163,13 +199,17 @@ const Lobby = () => {
           ...lobby,
           players: lobby.players.map((p) => {
             if (p.name === player) {
-              // Set current player to not playing
-              return { ...p, playing: false };
+              // Set current player to not playing and clear selected option
+              return { ...p, playing: false, selectedOption: "" };
             }
             if (waitingPlayer && p.name === waitingPlayer.name) {
               // Set waiting player to playing
               return { ...p, playing: false }; // Change this to false
             }
+            // Clear selected option for opponent who is still playing
+            if (p.playing && p.selectedOption !== "") {
+              return { ...p, selectedOption: "" };
+            }
             return p;
           }),
         };
@@ -177,49 +217,64 @@ const Lobby = () => {
       return lobby;
     });
     setLatestLobbies(updatedLobbies);
-    localStorage.removeItem("gameStatus")
-    setSelectedOption("")
-    setGameStatus([])
+    localStorage.removeItem("gameStatus");
+    setSelectedOption("");
+    setGameStatus([]);
+    setPlayerScore(0)
+    setOpponentScore(0)
     localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
   };
-  
+
+  useEffect(() => {
+    console.log(gameStatus, "game");
+  }, [gameStatus]);
+
+  // start match on click of start in waiting lobby status
   const start = () => {
     const currentLobby = latestLobbies.find((x) => x.lobbyName === lobbyId);
 
-   if(currentLobby?.players?.filter(player => player?.playing === true)?.length < 2){
-    const updatedLobbies = latestLobbies.map((lobby) => {
-      if (lobby.lobbyName === lobbyId) {
-        return {
-          ...lobby,
-          players: lobby.players.map((p) => {
-            if(p.playing === true){
-              p.selectedOption = ""
-            }
-            if (p.name === player) {
-              // Set current player to playing
-              return { ...p, playing: true };
-            }
-           
-            return p;
-          }),
-        };
-      }
-      return lobby;
-    });
-    setGameStatus([])
-    setSelectedOption("")
-    localStorage.removeItem(gameStatus)
-    setLatestLobbies(updatedLobbies);
-    localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
-    setShowStart(false); // Hide the start button
-  }else{
-    alert("Someone joined the game")
-  }
+    // checking if another player has joined (max 2 players can be in active game state)
+    if (
+      currentLobby?.players?.filter((player) => player?.playing === true)
+        ?.length < 2
+    ) {
+      const updatedLobbies = latestLobbies.map((lobby) => {
+        if (lobby.lobbyName === lobbyId) {
+          return {
+            ...lobby,
+            players: lobby.players.map((p) => {
+              if (p.playing === true) {
+                p.selectedOption = "";
+              }
+              if (p.name === player) {
+                // Set current player to playing
+                return { ...p, playing: true };
+              }
+
+              return p;
+            }),
+          };
+        }
+        return lobby;
+      });
+      setGameStatus([]);
+      setPlayerScore(0)
+      setOpponentScore(0)
+      setSelectedOption("");
+      localStorage.removeItem("gameStatus");
+      setLatestLobbies(updatedLobbies);
+      localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
+      setShowStart(false); // Hide the start button
+    } else {
+      alert("Someone joined the game");
+    }
   };
-  
+
   const showButtons = () => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
-    const currentPlayer = currentLobby?.players?.find((x) => x?.name === player);
+    const currentPlayer = currentLobby?.players?.find(
+      (x) => x?.name === player
+    );
     return waiting && !currentPlayer?.playing ? (
       <p>{message}</p>
     ) : !currentPlayer?.playing ? (
@@ -229,7 +284,9 @@ const Lobby = () => {
       </>
     ) : (
       <>
-        <p>Waiting for opponent</p>
+        {opponent?.selectedOption === "" && (
+          <p>Waiting for opponent to select</p>
+        )}
         <p>Your selection is: {selectedOption}</p>
         <div className="rps-button-container">
           <button
@@ -254,29 +311,54 @@ const Lobby = () => {
             Scissor
           </button>
         </div>
-        <div>Click on done to confirm selection</div>
-        <button onClick={handleSelection} disabled={disableDone}>
-          Done
-        </button>
-        {gameStatus?.gameStatus && !!opponent && !!player && (
+        <div className="done-section">
+          <button
+            style={{ width: "100px" }}
+            onClick={handleSelection}
+            disabled={disableDone || selectedOption === ""}
+          >
+            Done
+          </button>
+          <span style={{ alignSelf: "center" }}>
+            ( click on done to confirm selection)
+          </span>
+        </div>
+        {!!gameStatus?.gameStatus && !!opponent && !!player && (
           <>
-            <span>{gameStatus.gameStatus}</span>
-            <span> Your score: {gameStatus?.currentPlayer === player ? gameStatus.playerScore: gameStatus.opponentScore}</span>
-            <span>
+            <span
+              className={`game-status ${
+                gameStatus?.gameStatus?.includes("Won")
+                  ? "won"
+                  : gameStatus?.gameStatus?.includes("Lost")
+                  ? "lost"
+                  : "tie"
+              }`}
+            >
+              {gameStatus.gameStatus} !!
+            </span>
+            <span className="score-span">
               {" "}
-              {opponent.name} score: {gameStatus?.opponent === player ? gameStatus.opponentScore : gameStatus.playerScore}
+              {/* Your score: {gameStatus.currentPlayer === player ? playerScore : opponentScore} */}
+              Your score: {playerScore}
+            </span>
+            <span className="score-span">
+              {" "}
+              {/* {opponent.name} score: {gameStatus.opponent === opponent.name ? opponentScore : playerScore} */}
+              {opponent.name} score: {opponentScore}
             </span>
             <button className="rematch-button" onClick={handleRequestRematch}>
               Request Rematch
             </button>
           </>
         )}
-        <div>
-          <button style = {{marginTop: "20px"}} onClick={playWithAnotherPlayer}>Exit Match</button>
-        </div>
+
+        <button style={{ marginTop: "20px" }} onClick={handleExitMatch}>
+          Exit Match
+        </button>
       </>
     );
   };
+
 
   const showResult = () => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
@@ -323,6 +405,8 @@ const Lobby = () => {
         opponentScore: opponent.score,
       };
       setGameStatus(gameResult);
+      setPlayerScore(currentPlayer.score)
+      setOpponentScore(opponent.score)
       localStorage.setItem("gameStatus", JSON.stringify(gameResult));
 
       const updatedLobbies = latestLobbies.map((lobby) =>
@@ -334,16 +418,19 @@ const Lobby = () => {
   };
 
   useEffect(() => {
-    if (selectedOption && opponent?.selectedOption) {
+    if (selectedOption !== "" && opponent?.selectedOption !== "") {
       showResult();
     }
   }, [selectedOption, opponent?.selectedOption]);
 
   useEffect(() => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
-    const currentPlayer = currentLobby?.players?.find((x) => x?.name === player);
+    const currentPlayer = currentLobby?.players?.find(
+      (x) => x?.name === player
+    );
     const opponent = currentLobby?.players?.find(
-      (x) => x?.selectedOption !== "" && x?.playing === true && x?.name !== player
+      (x) =>
+        x?.selectedOption !== "" && x?.playing === true && x?.name !== player
     );
     currentPlayer?.score && setPlayerScore(currentPlayer.score);
     opponent?.score && setOpponentScore(opponent.score);
@@ -377,7 +464,9 @@ const Lobby = () => {
 
   const startNewGame = (currentLobby, currentPlayer, opponent) => {
     setSelectedOption("");
-    setGameStatus({});
+    setGameStatus([]);
+    setPlayerScore(0)
+    setOpponentScore(0)
     currentPlayer.requestedRematch = false;
     opponent.requestedRematch = false;
     opponent.selectedOption = "";
@@ -388,35 +477,41 @@ const Lobby = () => {
     );
 
     localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
-    localStorage.setItem("gameStatus", JSON.stringify({}));
+    localStorage.setItem("gameStatus", JSON.stringify([]));
     // Uncomment the line below if using state management for latestLobbies
     // setLatestLobbies(updatedLobbies);
   };
 
   useEffect(() => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
-    const currentPlayer = currentLobby?.players?.find((x) => x?.name === player);
-    const opponent = currentLobby?.players?.find(
-      (x) => x?.selectedOption !== "" && x?.playing === true && x?.name !== player
+    const currentPlayer = currentLobby?.players?.find(
+      (x) => x?.name === player
     );
-    if(currentPlayer?.playing === true){
-    if (currentPlayer?.requestedRematch || opponent?.requestedRematch) {
-      if (currentPlayer.requestedRematch && !opponent?.requestedRematch) {
-        alert("Waiting for opponent to accept request");
+    const opponent = currentLobby?.players?.find(
+      (x) =>
+        x?.selectedOption !== "" && x?.playing === true && x?.name !== player
+    );
+    if (currentPlayer?.playing === true) {
+      if (currentPlayer?.requestedRematch || opponent?.requestedRematch) {
+        if (currentPlayer.requestedRematch && !opponent?.requestedRematch) {
+          alert("Waiting for opponent to accept request");
+        }
+        if (opponent?.requestedRematch && !currentPlayer.requestedRematch) {
+          alert("Opponent has requested a rematch");
+        }
+        if (currentPlayer.requestedRematch && opponent?.requestedRematch) {
+          alert("Starting new game");
+          startNewGame(currentLobby, currentPlayer, opponent);
+        }
       }
-      if (opponent?.requestedRematch && !currentPlayer.requestedRematch) {
-        alert("Opponent has requested a rematch");
-      }
-      if (currentPlayer.requestedRematch && opponent?.requestedRematch) {
-        alert("Starting new game");
-        startNewGame(currentLobby, currentPlayer, opponent);
-      }
-    }}
+    }
   }, [latestLobbies, player, lobbyId]);
 
   useEffect(() => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
-    const currentPlayer = currentLobby?.players?.find((x) => x?.name === player);
+    const currentPlayer = currentLobby?.players?.find(
+      (x) => x?.name === player
+    );
     const playersPlaying = currentLobby?.players?.filter(
       (x) => x?.playing === true
     ).length;
