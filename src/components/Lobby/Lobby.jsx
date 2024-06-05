@@ -174,7 +174,7 @@ const Lobby = () => {
       .find((lobby) => lobby.lobbyName === lobbyId)
       .players.find((p) => p.playing && p.name !== player);
 
-    if (!currentPlayer.selectedOption || !opponent.selectedOption) {
+    if (!currentPlayer?.selectedOption || !opponent?.selectedOption) {
       localStorage.removeItem("gameStatus");
     }
   };
@@ -377,6 +377,7 @@ const Lobby = () => {
         (currentPlayerSelection === "Scissor" && opponentSelection === "Paper")
       ) {
         currentPlayer.score += 1;
+        setPlayerScore(prevScore => prevScore + 1);
         gameStatusMessage = `${currentPlayer.name} Won`;
       } else if (
         (opponentSelection === "Rock" &&
@@ -385,6 +386,8 @@ const Lobby = () => {
         (opponentSelection === "Scissor" && currentPlayerSelection === "Paper")
       ) {
         opponent.score += 1;
+        setOpponentScore(prevScore => prevScore + 1);
+
         gameStatusMessage = `${currentPlayer.name} Lost`;
       } else {
         gameStatusMessage = "It's a Tie";
@@ -397,9 +400,7 @@ const Lobby = () => {
         playerScore: currentPlayer.score,
         opponentScore: opponent.score,
       };
-      setGameStatus(gameResult);
-      setPlayerScore(currentPlayer.score);
-      setOpponentScore(opponent.score);
+      setGameStatus(gameResult);    
       localStorage.setItem("gameStatus", JSON.stringify(gameResult));
 
       const updatedLobbies = latestLobbies.map((lobby) =>
