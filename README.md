@@ -4,7 +4,7 @@ Rock Paper Scissors Multiplayer Game is a web application that allows users to p
 
 Deployed Link
 
-[Link Text]()https://hyperface-assignment-sigma.vercel.app/)
+[Link Text](https://hyperface-assignment-sigma.vercel.app/)
 
 
 ## Features
