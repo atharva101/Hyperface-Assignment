@@ -36,7 +36,7 @@ const Lobby = () => {
 
       setLatestLobbies(lobbies);
       const gameResult = JSON.parse(localStorage.getItem("gameStatus"));
-      
+
       if (gameResult) {
         setGameStatus(gameResult);
         setPlayerScore(gameResult.playerScore);
@@ -76,8 +76,6 @@ const Lobby = () => {
       setWaiting(true);
     }
   }, [latestLobbies]);
-
-  
 
   const joinLobby = () => {
     setPlayer(name);
@@ -149,10 +147,10 @@ const Lobby = () => {
 
   const handleSelection = () => {
     setDisableDone(true);
-    setGameStatus([])
-    setPlayerScore(0)
-    setOpponentScore(0)
-    localStorage.removeItem("gameStatus")
+    setGameStatus([]);
+    setPlayerScore(0);
+    setOpponentScore(0);
+    localStorage.removeItem("gameStatus");
     const updatedLobbies = latestLobbies.map((lobby) => {
       if (lobby.lobbyName === lobbyId) {
         return {
@@ -220,14 +218,10 @@ const Lobby = () => {
     localStorage.removeItem("gameStatus");
     setSelectedOption("");
     setGameStatus([]);
-    setPlayerScore(0)
-    setOpponentScore(0)
+    setPlayerScore(0);
+    setOpponentScore(0);
     localStorage.setItem("lobbies", JSON.stringify(updatedLobbies));
   };
-
-  useEffect(() => {
-    console.log(gameStatus, "game");
-  }, [gameStatus]);
 
   // start match on click of start in waiting lobby status
   const start = () => {
@@ -258,8 +252,8 @@ const Lobby = () => {
         return lobby;
       });
       setGameStatus([]);
-      setPlayerScore(0)
-      setOpponentScore(0)
+      setPlayerScore(0);
+      setOpponentScore(0);
       setSelectedOption("");
       localStorage.removeItem("gameStatus");
       setLatestLobbies(updatedLobbies);
@@ -359,7 +353,6 @@ const Lobby = () => {
     );
   };
 
-
   const showResult = () => {
     const currentLobby = latestLobbies?.find((x) => x.lobbyName === lobbyId);
     const currentPlayer = currentLobby?.players?.find((x) => x.name === player);
@@ -405,8 +398,8 @@ const Lobby = () => {
         opponentScore: opponent.score,
       };
       setGameStatus(gameResult);
-      setPlayerScore(currentPlayer.score)
-      setOpponentScore(opponent.score)
+      setPlayerScore(currentPlayer.score);
+      setOpponentScore(opponent.score);
       localStorage.setItem("gameStatus", JSON.stringify(gameResult));
 
       const updatedLobbies = latestLobbies.map((lobby) =>
@@ -465,8 +458,8 @@ const Lobby = () => {
   const startNewGame = (currentLobby, currentPlayer, opponent) => {
     setSelectedOption("");
     setGameStatus([]);
-    setPlayerScore(0)
-    setOpponentScore(0)
+    setPlayerScore(0);
+    setOpponentScore(0);
     currentPlayer.requestedRematch = false;
     opponent.requestedRematch = false;
     opponent.selectedOption = "";

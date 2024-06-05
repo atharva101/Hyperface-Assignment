@@ -66,7 +66,6 @@ export const CreateLobby = () => {
     return result;
   }
 
-  console.log(gameLobbyPlayers, "game");
   // create lobby
   const createLobby = () => {
     const lobbyId = makeid(6);
@@ -115,7 +114,6 @@ export const CreateLobby = () => {
   const handlePlayRedirection = (player) => {
     const lobbyUrl = `${window.location.origin}/${player.lobbyId}?name=${player?.name}`;
     window.open(lobbyUrl, +"_blank");
-    console.log(lobbyId, window.location.origin, "jij");
   };
 
   return (
