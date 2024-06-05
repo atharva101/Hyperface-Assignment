@@ -95,7 +95,7 @@ export const CreateLobby = () => {
 
       alert(
         `URL copied to clipboard!\nYou can share the lobby URL: ${
-          window.location.href + "/" + lobbyId
+          window.location.href  + lobbyId
         }`
       );
     } catch (error) {

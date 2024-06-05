@@ -39,8 +39,8 @@ const Lobby = () => {
 
       if (gameResult) {
         setGameStatus(gameResult);
-        setPlayerScore(gameResult.playerScore);
-        setOpponentScore(gameResult.opponentScore);
+        // setPlayerScore(gameResult.playerScore);
+        // setOpponentScore(gameResult.opponentScore);
       }
       const currentLobby = lobbies?.find((x) => x.lobbyName === lobbyId);
       const currentPlayer = currentLobby?.players?.find(
