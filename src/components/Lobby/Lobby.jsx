@@ -273,7 +273,7 @@ const Lobby = () => {
       <p>{message}</p>
     ) : !currentPlayer?.playing ? (
       <>
-        <span>You are in the waiting lobby</span>
+        <span style = {{margin: "20px", display: "block"}}>You are in the waiting lobby</span>
         {showStart && <button onClick={start}>Start Game</button>}
       </>
     ) : (
