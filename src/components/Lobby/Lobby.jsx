@@ -491,7 +491,7 @@ const Lobby = () => {
           alert("Waiting for opponent to accept request");
         }
         if (opponent?.requestedRematch && !currentPlayer.requestedRematch) {
-          alert("Opponent has requested a rematch");
+          alert("Opponent has requested a rematch, click on request rematch to accept a request");
         }
         if (currentPlayer.requestedRematch && opponent?.requestedRematch) {
           alert("Starting new game");
